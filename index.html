@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vocabulary Games — Gadgets & Things</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:linear-gradient(160deg,#eef2ff,#fdf2f8 55%,#ecfeff);
+  color:#1e293b;min-height:100vh;
+}
+header{text-align:center;padding:26px 16px 6px}
+h1{margin:0;font-size:clamp(22px,4vw,34px);color:#312e81;letter-spacing:.3px}
+header p{margin:8px 0 0;color:#64748b;font-size:15px}
+nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:18px 12px}
+nav button{
+  border:none;padding:11px 18px;border-radius:999px;background:#fff;color:#4338ca;
+  font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(79,70,229,.12);
+  font-size:15px;transition:.2s;font-family:inherit;
+}
+nav button.active{background:#4f46e5;color:#fff;box-shadow:0 6px 16px rgba(79,70,229,.4)}
+nav button:hover{transform:translateY(-2px)}
+main{max-width:1020px;margin:0 auto;padding:0 16px 70px}
+.panel{display:none}
+.panel.active{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hint{
+  background:#fff;border-left:5px solid #4f46e5;border-radius:12px;padding:12px 16px;
+  margin-bottom:18px;color:#475569;font-size:15px;box-shadow:0 3px 12px rgba(0,0,0,.05);
+}
+.hint b{color:#312e81}
+.btn{
+  border:2px solid #c7d2fe;background:#fff;color:#4338ca;font-weight:700;
+  padding:10px 18px;border-radius:10px;cursor:pointer;font-size:15px;
+  font-family:inherit;transition:.15s;
+}
+.btn:hover{background:#eef2ff;transform:translateY(-2px)}
+.btn.primary{background:#4f46e5;color:#fff;border-color:#4f46e5}
+.btn.primary:hover{background:#4338ca}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;justify-content:center}
+.score{text-align:center;font-weight:700;color:#4f46e5;margin-bottom:14px;font-size:16px}
+
+/* ---------- GAME 1: MATCHING ---------- */
+.match-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:660px){.match-wrap{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:9px}
+.col-title{text-align:center;font-weight:800;color:#64748b;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px}
+.match-card{
+  border:2px solid #e2e8f0;background:#fff;border-radius:12px;padding:10px 14px;
+  cursor:pointer;font-size:16px;font-weight:600;color:#1e293b;text-align:left;
+  transition:.15s;font-family:inherit;line-height:1.3;
+}
+.match-card.pic{font-size:30px;text-align:center;padding:4px;line-height:1.4}
+.match-card:hover{border-color:#818cf8;transform:translateY(-2px)}
+.match-card.sel{border-color:#4f46e5;background:#eef2ff;box-shadow:0 0 0 3px #c7d2fe}
+.match-card.matched{border-color:#22c55e;background:#f0fdf4;color:#15803d;opacity:.6;pointer-events:none}
+.match-card.wrong{animation:shake .3s;border-color:#ef4444;background:#fef2f2}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+
+/* ---------- GAME 2: SCRATCH ---------- */
+.scratch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:16px}
+.scratch-card{
+  background:#fff;border-radius:16px;padding:10px;text-align:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.07);display:flex;flex-direction:column;
+  align-items:center;gap:8px;
+}
+.scratch-stage{position:relative;width:150px;height:150px;border-radius:12px;overflow:hidden;background:#f8fafc}
+.scratch-emoji{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:74px;user-select:none;
+}
+.scratch-canvas{
+  position:absolute;inset:0;width:150px;height:150px;touch-action:none;cursor:crosshair;
+  transition:opacity .55s;
+}
+.scratch-canvas.gone{opacity:0;pointer-events:none}
+.scratch-word{
+  font-weight:800;font-size:15px;color:#312e81;filter:blur(7px);transition:.5s;
+  user-select:none;
+}
+.scratch-card.revealed .scratch-word{filter:blur(0)}
+.mini{
+  border:none;background:#eef2ff;border-radius:8px;padding:5px 10px;cursor:pointer;
+  font-size:14px;font-family:inherit;
+}
+.mini:hover{background:#c7d2fe}
+
+/* ---------- GAME 3: CROSSWORD ---------- */
+.cw-scroll{overflow:auto;padding:10px 0}
+.cw-grid{display:grid;gap:2px;justify-content:center;margin:0 auto;width:max-content}
+.cw-cell{width:34px;height:34px;position:relative;background:#fff;border:1px solid #cbd5e1;border-radius:4px}
+.cw-cell.empty{background:transparent;border:none}
+.cw-cell input{
+  width:100%;height:100%;border:none;text-align:center;font-size:17px;font-weight:800;
+  text-transform:uppercase;background:transparent;outline:none;color:#1e293b;
+  border-radius:4px;font-family:inherit;padding:0;
+}
+.cw-cell input:focus{background:#eef2ff;box-shadow:0 0 0 2px #4f46e5 inset}
+.cw-num{position:absolute;top:0;left:3px;font-size:9px;color:#64748b;font-weight:800;pointer-events:none;line-height:1.2}
+.cw-cell.ok input{color:#16a34a}
+.cw-cell.bad input{color:#dc2626}
+.clues{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px}
+@media(max-width:640px){.clues{grid-template-columns:1fr}}
+.clues h3{margin:0 0 10px;color:#4f46e5;font-size:15px;letter-spacing:1px;text-transform:uppercase}
+.clue{
+  background:#fff;border-radius:9px;padding:8px 12px;margin-bottom:7px;font-size:15px;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;gap:9px;align-items:center;
+}
+.clue b{color:#4338ca;min-width:20px}
+.clue .em{font-size:20px}
+
+/* ---------- GAME 4: SPEAKING ---------- */
+.grammar{
+  background:#fff;border-radius:14px;padding:14px 18px;margin-bottom:20px;
+  box-shadow:0 3px 12px rgba(0,0,0,.06);font-size:15px;line-height:1.9;
+}
+.grammar .plus{color:#16a34a;font-weight:700}
+.grammar .minus{color:#dc2626;font-weight:700}
+.grammar .q{color:#2563eb;font-weight:700}
+.grammar code{background:#eef2ff;padding:2px 7px;border-radius:6px;color:#4338ca;font-weight:700}
+.speak-card{
+  background:#fff;border-radius:20px;padding:28px 22px;text-align:center;
+  box-shadow:0 10px 30px rgba(79,70,229,.15);max-width:560px;margin:0 auto;
+}
+.badge{
+  display:inline-block;width:46px;height:46px;line-height:46px;border-radius:50%;
+  font-size:24px;font-weight:800;color:#fff;background:#4f46e5;margin-bottom:14px;
+}
+.badge.minus{background:#dc2626}
+.badge.plus{background:#16a34a}
+.badge.q{background:#2563eb}
+.sp-prompt{font-size:clamp(22px,5vw,30px);font-weight:800;color:#312e81;margin-bottom:8px}
+.sp-prompt .sep{color:#a5b4fc;margin:0 6px}
+.sp-sub{color:#94a3b8;font-size:14px;margin-bottom:16px}
+.sp-answer{
+  min-height:44px;font-size:clamp(17px,3.6vw,21px);font-weight:700;color:#0f766e;
+  background:#f0fdfa;border-radius:12px;padding:12px;opacity:0;transition:.3s;
+  display:flex;align-items:center;justify-content:center;
+}
+.sp-answer.show{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎒 Vocabulary Games — Gadgets &amp; Things</h1>
+  <p>comics · DVD · games console · guitar · ice skates · laptop · magazine · mobile phone · MP3 player · poster · skateboard · wallet · watch</p>
+</header>
+
+<nav>
+  <button data-tab="match" class="active">1️⃣ Match</button>
+  <button data-tab="scratch">2️⃣ Scratch &amp; Say</button>
+  <button data-tab="crossword">3️⃣ Crossword</button>
+  <button data-tab="speaking">4️⃣ Have got / Has got</button>
+</nav>
+
+<main>
+
+  <!-- ============ GAME 1 ============ -->
+  <section id="match" class="panel active">
+    <div class="hint">
+      <b>How to play:</b> click a <b>word</b> on the left, then click the matching <b>picture</b> on the right.
+      Correct pairs turn green. Match all 13!
+    </div>
+    <div class="score" id="matchScore">Matched: 0 / 13</div>
+    <div class="match-wrap">
+      <div class="col">
+        <div class="col-title">Words</div>
+        <div class="col" id="matchWords"></div>
+      </div>
+      <div class="col">
+        <div class="col-title">Pictures</div>
+        <div class="col" id="matchPics"></div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn primary" onclick="buildMatch()">🔄 Shuffle / New game</button>
+    </div>
+  </section>
+
+  <!-- ============ GAME 2 ============ -->
+  <section id="scratch" class="panel">
+    <div class="hint">
+      <b>How to play:</b> scratch the grey layer with your finger or mouse 🖱️.
+      Look at the picture and <b>say the word</b> out loud. When you scratch enough, the word appears —
+      check if you were right!
+    </div>
+    <div class="row" style="margin:0 0 18px">
+      <button class="btn" onclick="revealAllScratch()">👀 Reveal all</button>
+      <button class="btn" onclick="initScratch()">🔄 Reset cards</button>
+    </div>
+    <div class="scratch-grid" id="scratchGrid"></div>
+  </section>
+
+  <!-- ============ GAME 3 ============ -->
+  <section id="crossword" class="panel">
+    <div class="hint">
+      <b>How to play:</b> read the picture clue and the number of letters, then type the word.
+      Click a cell and use your keyboard. Use <b>Check</b> to see your score.
+    </div>
+    <div class="cw-scroll"><div class="cw-grid" id="cwGrid"></div></div>
+    <div class="row">
+      <button class="btn primary" onclick="checkCrossword()">✅ Check</button>
+      <button class="btn" onclick="showCrossword()">💡 Show answers</button>
+      <button class="btn" onclick="newCrossword()">🔄 New crossword</button>
+    </div>
+    <div class="clues">
+      <div><h3>Across ➡️</h3><div id="cwAcross"></div></div>
+      <div><h3>Down ⬇️</h3><div id="cwDown"></div></div>
+    </div>
+  </section>
+
+  <!-- ============ GAME 4 ============ -->
+  <section id="speaking" class="panel">
+    <div class="grammar">
+      <b>Remember:</b><br>
+      I / You / We / They → <code>have got</code> &nbsp;&nbsp;•&nbsp;&nbsp; He / She / It → <code>has got</code><br>
+      <span class="plus">+</span> I <b>have got</b> a guitar. &nbsp; She <b>has got</b> a guitar.<br>
+      <span class="minus">–</span> I <b>haven't got</b> a guitar. &nbsp; She <b>hasn't got</b> a guitar.<br>
+      <span class="q">?</span> <b>Have</b> you <b>got</b> a guitar? &nbsp; <b>Has</b> she <b>got</b> a guitar?<br>
+      &nbsp;&nbsp;&nbsp;Yes, I have. / No, I haven't. &nbsp;•&nbsp; Yes, she has. / No, she hasn't.
+    </div>
+
+    <div class="speak-card">
+      <div class="badge" id="spBadge">+</div>
+      <div class="sp-prompt" id="spPrompt">She <span class="sep">•</span> skateboard</div>
+      <div class="sp-sub" id="spSub">Make a sentence with <b>have got / has got</b>.</div>
+      <div class="sp-answer" id="spAnswer"></div>
+      <div class="row">
+        <button class="btn primary" id="spShow">👀 Show answer</button>
+        <button class="btn" id="spSpeak">🔊 Listen</button>
+        <button class="btn" id="spNext">➡️ Next card</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* =========================================================
+   DATA
+   ========================================================= */
+const WORDS = [
+  {en:'comics',       pic:'🦸',  art:''},
+  {en:'DVD',          pic:'📀',  art:'a'},
+  {en:'games console',pic:'🎮',  art:'a'},
+  {en:'guitar',       pic:'🎸',  art:'a'},
+  {en:'ice skates',   pic:'⛸️',  art:''},
+  {en:'laptop',       pic:'💻',  art:'a'},
+  {en:'magazine',     pic:'📖',  art:'a'},
+  {en:'mobile phone', pic:'📱',  art:'a'},
+  {en:'MP3 player',   pic:'🎧',  art:'an'},
+  {en:'poster',       pic:'🖼️',  art:'a'},
+  {en:'skateboard',   pic:'🛹',  art:'a'},
+  {en:'wallet',       pic:'👛',  art:'a'},
+  {en:'watch',        pic:'⌚',  art:'a'}
+];
+
+const EMOJI_MAP = {
+  'COMICS':'🦸','DVD':'📀','GAMESCONSOLE':'🎮','GUITAR':'🎸','ICESKATES':'⛸️',
+  'LAPTOP':'💻','MAGAZINE':'📖','MOBILEPHONE':'📱','MP3PLAYER':'🎧','POSTER':'🖼️',
+  'SKATEBOARD':'🛹','WALLET':'👛','WATCH':'⌚'
+};
+
+const K = (r,c) => r + ',' + c;
+
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){ const j = Math.random()*(i+1)|0; [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function pick(a){ return a[Math.random()*a.length|0]; }
+
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-GB'; u.rate = .85;
+  speechSynthesis.speak(u);
+}
+
+/* =========================================================
+   TABS
+   ========================================================= */
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* =========================================================
+   GAME 1 — MATCHING
+   ========================================================= */
+let selectedWord = null;
+let matchedCount = 0;
+
+function buildMatch(){
+  const wordsBox = document.getElementById('matchWords');
+  const picsBox  = document.getElementById('matchPics');
+  wordsBox.innerHTML = ''; picsBox.innerHTML = '';
+  selectedWord = null; matchedCount = 0;
+  updateScore();
+
+  const idx = shuffle(WORDS.map((_,i)=>i));
+
+  idx.forEach(i=>{
+    const b = document.createElement('button');
+    b.className = 'match-card word';
+    b.dataset.i = i;
+    b.textContent = WORDS[i].en;
+    b.addEventListener('click', ()=>selectWord(b));
+    wordsBox.appendChild(b);
+  });
+
+  shuffle(idx.slice()).forEach(i=>{
+    const b = document.createElement('button');
+    b.className = 'match-card pic';
+    b.dataset.i = i;
+    b.textContent = WORDS[i].pic;
+    b.addEventListener('click', ()=>selectPic(b));
+    picsBox.appendChild(b);
+  });
+}
+
+function updateScore(){
+  document.getElementById('matchScore').textContent =
+    'Matched: ' + matchedCount + ' / ' + WORDS.length;
+}
+
+function selectWord(el){
+  if(el.classList.contains('matched')) return;
+  document.querySelectorAll('.match-card.word').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedWord = el;
+}
+
+function selectPic(el){
+  if(el.classList.contains('matched')) return;
+  if(!selectedWord){
+    el.classList.add('wrong');
+    setTimeout(()=>el.classList.remove('wrong'), 400);
+    return;
+  }
+  if(selectedWord.dataset.i === el.dataset.i){
+    selectedWord.classList.remove('sel');
+    selectedWord.classList.add('matched');
+    el.classList.add('matched');
+    const w = WORDS[+el.dataset.i];
+    speak(w.en);
+    selectedWord = null;
+    matchedCount++;
+    updateScore();
+    if(matchedCount === WORDS.length){
+      setTimeout(()=>alert('🎉 Well done! All words matched!'), 300);
+    }
+  } else {
+    const w = selectedWord;
+    el.classList.add('wrong'); w.classList.add('wrong');
+    setTimeout(()=>{ el.classList.remove('wrong'); w.classList.remove('wrong'); }, 400);
+    w.classList.remove('sel');
+    selectedWord = null;
+  }
+}
+
+/* =========================================================
+   GAME 2 — SCRATCH & SAY
+   ========================================================= */
+function initScratch(){
+  const wrap = document.getElementById('scratchGrid');
+  wrap.innerHTML = '';
+  WORDS.forEach(w=>{
+    const card = document.createElement('div');
+    card.className = 'scratch-card';
+    card.innerHTML = `
+      <div class="scratch-stage">
+        <div class="scratch-emoji">${w.pic}</div>
+        <canvas class="scratch-canvas" width="150" height="150"></canvas>
+      </div>
+      <div class="scratch-word">${w.en}</div>
+      <button class="mini">🔊 Say it</button>
+    `;
+    wrap.appendChild(card);
+
+    const canvas = card.querySelector('canvas');
+    paintScratch(canvas, card);
+    card.querySelector('.mini').addEventListener('click', ()=>{
+      card.classList.add('revealed');
+      speak(w.en);
+    });
+  });
+}
+
+function paintScratch(canvas, card){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const g = ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#cbd5e1'); g.addColorStop(1,'#94a3b8');
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = 'rgba(255,255,255,.85)';
+  ctx.font = 'bold 15px "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('SCRATCH', W/2, H/2 + 5);
+  ctx.globalCompositeOperation = 'destination-out';
+
+  let drawing = false, last = null, done = false, moves = 0;
+
+  function pt(e){
+    const r = canvas.getBoundingClientRect();
+    return { x:(e.clientX - r.left) * W / r.width, y:(e.clientY - r.top) * H / r.height };
+  }
+  function dot(p){
+    ctx.beginPath(); ctx.arc(p.x, p.y, 17, 0, Math.PI*2); ctx.fill();
+  }
+  function line(a,b){
+    ctx.lineWidth = 32; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  }
+  function reveal(){
+    if(done) return;
+    done = true;
+    canvas.classList.add('gone');
+    card.classList.add('revealed');
+  }
+  function check(){
+    if(done) return;
+    const data = ctx.getImageData(0,0,W,H).data;
+    let clear = 0, total = 0;
+    for(let i=3;i<data.length;i+=64){ total++; if(data[i] < 40) clear++; }
+    if(clear/total > 0.5) reveal();
+  }
+
+  canvas.addEventListener('pointerdown', e=>{
+    if(done) return;
+    drawing = true;
+    try{ canvas.setPointerCapture(e.pointerId); }catch(_){}
+    last = pt(e); dot(last);
+    e.preventDefault();
+  });
+  canvas.addEventListener('pointermove', e=>{
+    if(!drawing || done) return;
+    const p = pt(e);
+    line(last, p); last = p;
+    if(++moves % 8 === 0) check();
+    e.preventDefault();
+  });
+  canvas.addEventListener('pointerup', ()=>{ drawing = false; check(); });
+  canvas.addEventListener('pointercancel', ()=>{ drawing = false; check(); });
+
+  card._reveal = reveal;
+}
+
+function revealAllScratch(){
+  document.querySelectorAll('.scratch-card').forEach(c=>{
+    c.classList.add('revealed');
+    if(c._reveal) c._reveal();
+  });
+}
+
+/* =========================================================
+   GAME 3 — CROSSWORD GENERATOR
+   ========================================================= */
+function tryLayout(words){
+  const grid = new Map();
+  const placed = [];
+  const get = (r,c) => grid.get(K(r,c));
+
+  function fits(word,r,c,dir){
+    const dr = dir === 'V' ? 1 : 0, dc = dir === 'H' ? 1 : 0;
+    if(get(r-dr, c-dc) !== undefined) return false;
+    if(get(r + dr*word.length, c + dc*word.length) !== undefined) return false;
+    let cross = 0;
+    for(let i=0;i<word.length;i++){
+      const rr = r + dr*i, cc = c + dc*i;
+      const cur = get(rr,cc);
+      if(cur !== undefined){
+        if(cur !== word[i]) return false;
+        cross++;
+      } else {
+        if(dir === 'H'){
+          if(get(rr-1,cc) !== undefined || get(rr+1,cc) !== undefined) return false;
+        } else {
+          if(get(rr,cc-1) !== undefined || get(rr,cc+1) !== undefined) return false;
+        }
+      }
+    }
+    return cross > 0;
+  }
+
+  function put(word,r,c,dir){
+    const dr = dir === 'V' ? 1 : 0, dc = dir === 'H' ? 1 : 0;
+    for(let i=0;i<word.length;i++) grid.set(K(r+dr*i, c+dc*i), word[i]);
+    placed.push({word,r,c,dir});
+  }
+
+  put(words[0], 0, 0, 'H');
+
+  for(let i=1;i<words.length;i++){
+    const word = words[i];
+    const opts = [];
+    for(const p of placed){
+      const dr = p.dir === 'V' ? 1 : 0, dc = p.dir === 'H' ? 1 : 0;
+      const ndir = p.dir === 'H' ? 'V' : 'H';
+      for(let j=0;j<p.word.length;j++){
+        const rr = p.r + dr*j, cc = p.c + dc*j;
+        for(let k=0;k<word.length;k++){
+          if(word[k] !== p.word[j]) continue;
+          const sr = ndir === 'V' ? rr - k : rr;
+          const sc = ndir === 'H' ? cc - k : cc;
+          if(fits(word, sr, sc, ndir)) opts.push({r:sr, c:sc, dir:ndir});
+        }
+      }
+    }
+    if(opts.length){
+      const o = opts[Math.random()*opts.length|0];
+      put(word, o.r, o.c, o.dir);
+    }
+  }
+  return { placed };
+}
+
+function normalize(placed){
+  let minR = Infinity, minC = Infinity, maxR = -Infinity, maxC = -Infinity;
+  placed.forEach(p=>{
+    const dr = p.dir === 'V' ? 1 : 0, dc = p.dir === 'H' ? 1 : 0;
+    for(let i=0;i<p.word.length;i++){
+      const r = p.r + dr*i, c = p.c + dc*i;
+      minR = Math.min(minR,r); minC = Math.min(minC,c);
+      maxR = Math.max(maxR,r); maxC = Math.max(maxC,c);
+    }
+  });
+  return {
+    placed: placed.map(p=>({...p, r:p.r-minR, c:p.c-minC})),
+    rows: maxR - minR + 1,
+    cols: maxC - minC + 1
+  };
+}
+
+function buildCrossword(list){
+  let best = null;
+  for(let attempt=0; attempt<400; attempt++){
+    const words = shuffle(list.slice()).sort((a,b)=>b.length - a.length);
+    const res = tryLayout(words);
+    if(!best || res.placed.length > best.placed.length) best = res;
+    if(best.placed.length === list.length && attempt >= 60) break;
+  }
+  return best;
+}
+
+function computeNumbers(cells, rows, cols){
+  const numbers = new Map();
+  let n = 1;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      if(!cells.has(K(r,c))) continue;
+      const startA = !cells.has(K(r,c-1)) && cells.has(K(r,c+1));
+      const startD = !cells.has(K(r-1,c)) && cells.has(K(r+1,c));
+      if(startA || startD) numbers.set(K(r,c), n++);
+    }
+  }
+  return numbers;
+}
+
+let cwInputs = [];
+
+function newCrossword(){
+  const list = ['COMICS','DVD','GUITAR','ICESKATES','LAPTOP','MAGAZINE',
+                'POSTER','SKATEBOARD','WALLET','WATCH'];
+
+  const best = buildCrossword(list);
+  const { placed, rows, cols } = normalize(best.placed);
+
+  const cells = new Map();
+  placed.forEach(p=>{
+    const dr = p.dir === 'V' ? 1 : 0, dc = p.dir === 'H' ? 1 : 0;
+    for(let i=0;i<p.word.length;i++) cells.set(K(p.r+dr*i, p.c+dc*i), p.word[i]);
+  });
+
+  const numbers = computeNumbers(cells, rows, cols);
+
+  const gridEl = document.getElementById('cwGrid');
+  gridEl.innerHTML = '';
+  gridEl.style.gridTemplateColumns = `repeat(${cols}, 34px)`;
+  cwInputs = [];
+
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const letter = cells.get(K(r,c));
+      const d = document.createElement('div');
+      d.className = 'cw-cell' + (letter ? '' : ' empty');
+      if(letter){
+        const num = numbers.get(K(r,c));
+        if(num){
+          const s = document.createElement('span');
+          s.className = 'cw-num';
+          s.textContent = num;
+          d.appendChild(s);
+        }
+        const inp = document.createElement('input');
+        inp.maxLength = 1;
+        inp.dataset.letter = letter;
+        inp.autocomplete = 'off';
+        inp.addEventListener('input', ()=>{
+          inp.value = inp.value.replace(/[^a-zA-Z]/g,'').toUpperCase();
+          d.classList.remove('ok','bad');
+          if(inp.value){
+            const i = cwInputs.indexOf(inp);
+            if(i > -1 && i < cwInputs.length - 1) cwInputs[i+1].focus();
+          }
+        });
+        inp.addEventListener('keydown', e=>{
+          if(e.key === 'Backspace' && !inp.value){
+            const i = cwInputs.indexOf(inp);
+            if(i > 0){ cwInputs[i-1].focus(); cwInputs[i-1].value=''; }
+          }
+        });
+        d.appendChild(inp);
+        cwInputs.push(inp);
+      }
+      gridEl.appendChild(d);
+    }
+  }
+
+  // clues
+  const across = [], down = [];
+  placed.forEach(p=>{
+    const n = numbers.get(K(p.r, p.c));
+    if(n === undefined) return;
+    (p.dir === 'H' ? across : down).push({ n, word: p.word });
+  });
+  across.sort((a,b)=>a.n-b.n);
+  down.sort((a,b)=>a.n-b.n);
+
+  const render = (arr, id) => {
+    const box = document.getElementById(id);
+    box.innerHTML = '';
+    arr.forEach(cl=>{
+      const div = document.createElement('div');
+      div.className = 'clue';
+      div.innerHTML = `<b>${cl.n}.</b><span class="em">${EMOJI_MAP[cl.word] || '❓'}</span>
+                       <span>(${cl.word.length} letters)</span>`;
+      box.appendChild(div);
+    });
+    if(!arr.length) box.innerHTML = '<div class="clue">—</div>';
+  };
+  render(across, 'cwAcross');
+  render(down, 'cwDown');
+}
+
+function checkCrossword(){
+  let right = 0, filled = 0;
+  cwInputs.forEach(inp=>{
+    const cell = inp.parentElement;
+    cell.classList.remove('ok','bad');
+    if(!inp.value) return;
+    filled++;
+    if(inp.value === inp.dataset.letter){ cell.classList.add('ok'); right++; }
+    else cell.classList.add('bad');
+  });
+  alert(`✅ Correct: ${right}   ❌ Wrong: ${filled - right}   ✍️ Empty: ${cwInputs.length - filled}`);
+}
+
+function showCrossword(){
+  cwInputs.forEach(inp=>{
+    inp.value = inp.dataset.letter;
+    inp.parentElement.classList.remove('bad');
+    inp.parentElement.classList.add('ok');
+  });
+}
+
+/* =========================================================
+   GAME 4 — HAVE GOT / HAS GOT SPEAKING CARDS
+   ========================================================= */
+const SUBJECTS = [
+  { t:'I',    v:'have' },
+  { t:'You',  v:'have' },
+  { t:'We',   v:'have' },
+  { t:'They', v:'have' },
+  { t:'He',   v:'has'  },
+  { t:'She',  v:'has'  }
+];
+
+let currentAnswer = '';
+
+function newSpeakingCard(){
+  const form = pick(['+','-','?']);
+  const subj = form === '?' ? pick(SUBJECTS.filter(s=>s.v === 'have' || s.t === 'He' || s.t === 'She'))
+                            : pick(SUBJECTS);
+  const w = pick(WORDS);
+  const obj = (w.art ? w.art + ' ' : '') + w.en;
+  const has = subj.v === 'has';
+  const subjLower = subj.t.toLowerCase();
+
+  let sentence = '';
+  if(form === '+'){
+    sentence = `${subj.t} ${subj.v} got ${obj}.`;
+  } else if(form === '-'){
+    sentence = `${subj.t} ${has ? "hasn't" : "haven't"} got ${obj}.`;
+  } else {
+    sentence = `${has ? 'Has' : 'Have'} ${subjLower} got ${obj}?`;
+    sentence += `  →  Yes, ${subjLower} ${has ? 'has' : 'have'}. / No, ${subjLower} ${has ? "hasn't" : "haven't"}.`;
+  }
+
+  currentAnswer = sentence;
+
+  const badge = document.getElementById('spBadge');
+  badge.className = 'badge ' + (form === '+' ? 'plus' : form === '-' ? 'minus' : 'q');
+  badge.textContent = form;
+
+  document.getElementById('spPrompt').innerHTML =
+    `${subj.t} <span class="sep">•</span> ${w.pic} ${w.en}`;
+
+  document.getElementById('spSub').innerHTML =
+    form === '+' ? 'Make an <b>affirmative</b> sentence (+).'
+    : form === '-' ? 'Make a <b>negative</b> sentence (–).'
+    : 'Make a <b>question</b> (?) and answer it.';
+
+  const ans = document.getElementById('spAnswer');
+  ans.textContent = '';
+  ans.classList.remove('show');
+}
+
+document.getElementById('spShow').addEventListener('click', ()=>{
+  const ans = document.getElementById('spAnswer');
+  ans.textContent = currentAnswer;
+  ans.classList.add('show');
+  speak(currentAnswer.split('  →  ')[0]);
+});
+document.getElementById('spSpeak').addEventListener('click', ()=>{
+  speak(currentAnswer.split('  →  ')[0]);
+});
+document.getElementById('spNext').addEventListener('click', newSpeakingCard);
+
+/* =========================================================
+   INIT
+   ========================================================= */
+buildMatch();
+initScratch();
+newCrossword();
+newSpeakingCard();
+</script>
+</body>
+</html>
